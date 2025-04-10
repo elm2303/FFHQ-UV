@@ -1,0 +1,41 @@
+#!/bin/bash
+#PBS -N e4e_Inversion
+#PBS -l select=1:ncpus=4:mem=32gb:ngpus=1:gpu_type=RTX6000
+#PBS -l walltime=01:00:00
+#PBS -o e4e_inversion_output.log
+#PBS -e e4e_inversion_error.log
+#PBS -j oe
+
+# Load modules - adjusted based on your dependency check
+module purge
+module load cuda/11.0.1
+module load gcc/7.3.0
+module load miniforge/3
+
+# Set CUDA paths
+export CUDA_HOME=/apps/cuda/11.0.1
+export PATH=$CUDA_HOME/bin:$PATH
+export LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH
+
+# Activate conda environment
+source ~/miniforge3/etc/profile.d/conda.sh
+conda activate ffhq_uv
+
+# Set working directory
+cd $PBS_O_WORKDIR
+
+# Define paths - ensure these are correct
+PROJ_DATA_DIR="../test"
+CHECKPOINTS_DIR="../checkpoints"
+
+# Run the inversion with error handling
+echo "Starting e4e inversion at $(date)"
+cd DataSet_Step1_Inversion || { echo "Failed to enter DataSet_Step1_Inversion"; exit 1; }
+
+python run_e4e_inversion.py \
+    --proj_data_dir "${PROJ_DATA_DIR}" \
+    --e4e_model_path "${CHECKPOINTS_DIR}/e4e_model/e4e_ffhq_encode.pt" \
+    --shape_predictor_model_path "${CHECKPOINTS_DIR}/dlib_model/shape_predictor_68_face_landmarks.dat" \
+    || { echo "e4e inversion failed"; exit 1; }
+
+echo "e4e inversion completed successfully at $(date)"

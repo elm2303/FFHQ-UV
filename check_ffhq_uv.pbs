@@ -1,0 +1,27 @@
+#!/bin/bash
+#PBS -N Check_FFHQ_UV_Deps
+#PBS -l select=1:ncpus=4:mem=18gb:ngpus=1:gpu_type=RTX6000
+#PBS -l walltime=00:30:00
+
+# Navigate to the directory where the job was submitted
+cd $PBS_O_WORKDIR
+
+# Load Conda
+module load miniforge/3
+source ~/miniforge3/etc/profile.d/conda.sh
+conda config --set auto_activate_base false
+
+# Activate your FFHQ-UV Conda environment
+conda activate ffhq_uv
+
+echo "==[ Starting FFHQ-UV Dependency Check ]=="
+echo "Running on node: $(hostname)"
+echo "Running from directory: $(pwd)"
+echo "Start time: $(date)"
+
+nvidia-smi 
+
+# Run the dependency check script
+python check_ffhq_uv_dependencies.py
+
+echo "==[ Dependency check completed at $(date) ]=="

@@ -9,3 +9,6 @@
 /examples/fitting_examples/outputs*
 /debug_data
 /debug*
+/dataset
+/dataset_project
+

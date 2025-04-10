@@ -1,0 +1,26 @@
+#!/bin/bash
+#PBS -N Change_Tensorflow_Version
+#PBS -l select=1:ncpus=2:mem=18gb:ngpus=1:gpu_type=RTX6000
+#PBS -l walltime=01:00:00
+
+# Stop script on error
+set -e
+
+# Go to submission directory
+cd $PBS_O_WORKDIR
+echo "==[ STARTING FFHQ-UV SETUP ]=="
+
+# Load conda
+module load miniforge/3
+source ~/miniforge3/etc/profile.d/conda.sh
+conda config --set auto_activate_base false
+
+# Environment name
+ENV_NAME=ffhq_uv
+conda activate $ENV_NAME
+
+pip install tensorflow-gpu==1.15.0
+
+pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+
+echo "==[ Complete ] == "
