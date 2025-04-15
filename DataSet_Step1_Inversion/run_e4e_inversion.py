@@ -10,6 +10,9 @@ from utils.common import tensor2im
 from utils.alignment import align_face
 from models.psp import pSp  # we use the pSp framework to load the e4e encoder.
 
+from PIL import Image
+
+
 def remove_ipynb_checkpoints_directory(directory_path):
     checkpoint_dir = os.path.join(directory_path, '.ipynb_checkpoints')
     if os.path.isdir(checkpoint_dir):
@@ -42,7 +45,6 @@ def batch_inversion(args):
     os.makedirs(output_latents_dir, exist_ok=True)
     os.makedirs(output_inversions_dir, exist_ok=True)
     remove_ipynb_checkpoints_directory(input_images_dir)
-
 
     # ----------------------- Load Pretrained Model -----------------------
     ckpt = torch.load(e4e_model_path, map_location='cpu')
