@@ -4,10 +4,17 @@ import argparse
 import dlib
 import torch
 import torchvision.transforms as transforms
+import shutil
 
 from utils.common import tensor2im
 from utils.alignment import align_face
 from models.psp import pSp  # we use the pSp framework to load the e4e encoder.
+
+def remove_ipynb_checkpoints_directory(directory_path):
+    checkpoint_dir = os.path.join(directory_path, '.ipynb_checkpoints')
+    if os.path.isdir(checkpoint_dir):
+        print(f"Removing .ipynb_checkpoints directory at {checkpoint_dir}")
+        shutil.rmtree(checkpoint_dir)  # Recursively delete the directory
 
 
 def run_alignment(image_path, shape_predictor_model_path):
@@ -34,6 +41,8 @@ def batch_inversion(args):
 
     os.makedirs(output_latents_dir, exist_ok=True)
     os.makedirs(output_inversions_dir, exist_ok=True)
+    remove_ipynb_checkpoints_directory(input_images_dir)
+
 
     # ----------------------- Load Pretrained Model -----------------------
     ckpt = torch.load(e4e_model_path, map_location='cpu')
@@ -51,6 +60,8 @@ def batch_inversion(args):
     # ----------------------- Perform Inversion -----------------------
     fnames = sorted(os.listdir(input_images_dir))
     for fn in fnames:
+        
+        print(f"Processing image: {fn}")
         basename = fn[:fn.rfind('.')]
 
         tic = time.time()

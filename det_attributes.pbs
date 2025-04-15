@@ -21,13 +21,11 @@ PROJ_DATA_DIR="../test"
 CHECKPOINTS_DIR="../checkpoints"
 
 # Run the inversion with error handling
-echo "Starting e4e inversion at $(date)"
-cd DataSet_Step1_Inversion || { echo "Failed to enter DataSet_Step1_Inversion"; exit 1; }
+echo "Starting Determine Attributes at $(date)"
+cd DataSet_Step2_Det_Attributes || { echo "Failed to enter DataSet_Step2_Det_Attributes"; exit 1; }
 
-python run_e4e_inversion.py \
-    --proj_data_dir "${PROJ_DATA_DIR}" \
-    --e4e_model_path "${CHECKPOINTS_DIR}/e4e_model/e4e_ffhq_encode.pt" \
-    --shape_predictor_model_path "${CHECKPOINTS_DIR}/dlib_model/shape_predictor_68_face_landmarks.dat" \
-    || { echo "e4e inversion failed"; exit 1; }
-
-echo "e4e inversion completed successfully at $(date)"
+python run_dpr_light.py \
+    --proj_data_dir ${proj_data_dir} \
+    --dpr_model_path ${checkpoints_dir}/dpr_model/trained_model_03.t7
+#python run_ms_api_attr.py \
+#    --proj_data_dir ${proj_data_dir}

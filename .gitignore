@@ -11,4 +11,6 @@
 /debug*
 /dataset
 /dataset_project
-
+*/.ipynb_checkpoints
+/.ipynb_checkpoints
+*/*/.ipynb_checkpoints

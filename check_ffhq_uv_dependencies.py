@@ -15,11 +15,6 @@ except Exception as e:
 try:
     import tensorflow as tf
     print(f"✅ TensorFlow: {tf.__version__}")
-    gpus = tf.config.list_physical_devices('GPU')
-    print(f"   ┗ GPU Available: {bool(gpus)} ({[gpu.name for gpu in gpus]})")
-    cuda_version = tf.sysconfig.get_build_info().get("cuda_version", "Unknown")
-    cudnn_version = tf.sysconfig.get_build_info().get("cudnn_version", "Unknown")
-    print(f"   ┗ Built with CUDA {cuda_version}, cuDNN {cudnn_version}")
 except Exception as e:
     print(f"❌ TensorFlow Error: {e}")
 
