@@ -80,11 +80,16 @@ if __name__ == '__main__':
     # ----------------------- Calcuate light -----------------------
     fnames = sorted(os.listdir(input_images_dir))
     for fn in fnames:
+        print(f"Processing image: {fn}")
+
         basename = fn[:fn.rfind('.')]
 
         tic = time.time()
 
         img = cv2.imread(os.path.join(input_images_dir, fn))
+        if img is None:
+            print(f"Failed to load image: {fn}")
+            continue
         img = cv2.resize(img, (512, 512))
         Lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
         lv = get_light_vec(Lab, my_network, device)

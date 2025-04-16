@@ -1,0 +1,68 @@
+#!/bin/bash
+#PBS -N run_ffhq_uv_pipeline
+#PBS -l select=1:ncpus=2:mem=24gb:ngpus=1:gpu_type=RTX6000
+#PBS -l walltime=01:00:00
+#PBS -j oe
+
+# Load necessary modules
+module load cuda/10.1
+module load miniforge/3
+
+# Activate the conda environment
+source ~/miniforge3/etc/profile.d/conda.sh
+conda activate ffhq_uv_cu101
+
+# Move to the working directory (where qsub was called)
+cd $PBS_O_WORKDIR
+
+# Enable error handling
+set -e
+
+######################### Configuration #########################
+proj_data_dir="../examples/dataset_examples"
+checkpoints_dir="../checkpoints"
+topo_assets_dir="../topo_assets"
+#################################################################
+
+echo "Starting Step 1: Inversion..."
+cd ./DataSet_Step1_Inversion
+python run_e4e_inversion.py \
+    --proj_data_dir ${proj_data_dir} \
+    --e4e_model_path ${checkpoints_dir}/e4e_model/e4e_ffhq_encode.pt \
+    --shape_predictor_model_path ${checkpoints_dir}/dlib_model/shape_predictor_68_face_landmarks.dat
+
+echo "Step 1 completed."
+
+echo "Starting Step 2: Detect Attributes..."
+cd ../DataSet_Step2_Det_Attributes
+python run_dpr_light.py \
+    --proj_data_dir ${proj_data_dir} \
+    --dpr_model_path ${checkpoints_dir}/dpr_model/trained_model_03.t7
+
+python run_ms_api_attr.py \
+    --proj_data_dir ${proj_data_dir}
+
+echo "Step 2 completed."
+
+echo "Starting Step 3: Face Editing..."
+cd ../DataSet_Step3_Editing
+python run_styleflow_editing.py \
+    --proj_data_dir ${proj_data_dir} \
+    --network_pkl ${checkpoints_dir}/stylegan_model/stylegan2-ffhq-config-f.pkl \
+    --flow_model_path ${checkpoints_dir}/styleflow_model/modellarge10k.pt \
+    --exp_direct_path ${checkpoints_dir}/styleflow_model/expression_direction.pt \
+    --exp_recognition_path ${checkpoints_dir}/exprecog_model/FacialExpRecognition_model.t7 \
+    --edit_items delight,norm_attr,multi_yaw
+
+echo "Step 3 completed."
+
+echo "Starting Step 4: Unwrap UV Texture..."
+cd ../DataSet_Step4_UV_Texture
+python run_unwrap_texture.py \
+    --proj_data_dir ${proj_data_dir} \
+    --ckp_dir ${checkpoints_dir} \
+    --topo_dir ${topo_assets_dir}
+
+echo "Step 4 completed."
+
+echo "All steps finished successfully!"

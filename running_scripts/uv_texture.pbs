@@ -1,0 +1,34 @@
+#!/bin/bash
+#PBS -N uv_texture
+#PBS -l select=1:ncpus=2:mem=24gb:ngpus=1:gpu_type=RTX6000
+#PBS -l walltime=01:00:00
+#PBS -j oe
+
+# Load modules
+module load cuda/10.1
+module load miniforge/3
+
+# Activate conda environment
+source ~/miniforge3/etc/profile.d/conda.sh
+conda activate ffhq_uv_cu101
+
+# Set working directory
+cd $PBS_O_WORKDIR
+
+# Define paths
+proj_data_dir="../test"
+checkpoints_dir="../checkpoints"
+topo_assets_dir="../topo_assets"
+
+# Read the edited multi-view face images in "edit" sub-folder
+# Save the unwrapped texture UV-map in "unwrap_texture" sub-folder
+echo "Starting UV texture unwrap at $(date)"
+cd ../DataSet_Step4_UV_Texture || { echo "Failed to enter DataSet_Step4_UV_Texture"; exit 1; }
+
+python run_unwrap_texture.py \
+    --proj_data_dir ${proj_data_dir} \
+    --ckp_dir ${checkpoints_dir} \
+    --topo_dir ${topo_assets_dir} \
+    || { echo "Step 4 UV texture unwrap failed"; exit 1; }
+
+echo "Step 4 UV texture unwrap completed successfully at $(date)"

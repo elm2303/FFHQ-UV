@@ -1,0 +1,34 @@
+#!/bin/bash
+#PBS -N e4e_Inversion
+#PBS -l select=1:ncpus=2:mem=24gb:ngpus=1:gpu_type=RTX6000
+#PBS -l walltime=01:00:00
+#PBS -j oe
+
+# Load modules 
+module load cuda/10.1
+module load miniforge/3
+
+# Activate conda environment
+source ~/miniforge3/etc/profile.d/conda.sh
+conda activate ffhq_uv_cu101
+
+# Set working directory
+cd $PBS_O_WORKDIR
+
+# Define paths
+proj_data_dir="../test"
+checkpoints_dir="../checkpoints"
+
+# Read the original images in "images" sub-folder
+# Save the inverted latents in "latents" sub-folder
+# Save the inverted images in "inversions" sub-folder
+echo "Starting e4e inversion at $(date)"
+cd ../DataSet_Step1_Inversion || { echo "Failed to enter DataSet_Step1_Inversion"; exit 1; }
+
+python run_e4e_inversion.py \
+    --proj_data_dir "${proj_data_dir}" \
+    --e4e_model_path "${checkpoints_dir}/e4e_model/e4e_ffhq_encode.pt" \
+    --shape_predictor_model_path "${checkpoints_dir}/dlib_model/shape_predictor_68_face_landmarks.dat" \
+    || { echo "Step 1 e4e inversion failed"; exit 1; }
+
+echo "Step 1 e4e inversion completed successfully at $(date)"

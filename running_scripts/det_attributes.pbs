@@ -1,0 +1,37 @@
+#!/bin/bash
+#PBS -N det_attributes
+#PBS -l select=1:ncpus=2:mem=24gb:ngpus=1:gpu_type=RTX6000
+#PBS -l walltime=01:00:00
+#PBS -j oe
+
+# Load modules 
+module load cuda/10.1
+module load miniforge/3
+
+# Activate conda environment
+source ~/miniforge3/etc/profile.d/conda.sh
+conda activate ffhq_uv_cu101
+
+# Set working directory
+cd $PBS_O_WORKDIR
+
+# Define paths
+proj_data_dir="../test"
+checkpoints_dir="../checkpoints"
+
+# Read the inverted images in "inversions" sub-folder
+# Save the detected light attributes in "lights" sub-folder
+# Save the detected other attributes in "attributes" and "attributes_ms_api" sub-folders
+echo "Starting Determine Attributes at $(date)"
+cd ../DataSet_Step2_Det_Attributes || { echo "Failed to enter DataSet_Step2_Det_Attributes"; exit 1; }
+
+python run_dpr_light.py \
+    --proj_data_dir ${proj_data_dir} \
+    --dpr_model_path ${checkpoints_dir}/dpr_model/trained_model_03.t7 \
+    || { echo "Step 2 Lighting failed"; exit 1; }
+    
+#python run_ms_api_attr.py \
+#    --proj_data_dir ${proj_data_dir} \
+#    || { echo "Step 2 MS Attributes failed"; exit 1; }
+
+echo "Step 2 Determine Attributes completed successfully at $(date)"

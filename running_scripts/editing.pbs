@@ -1,0 +1,37 @@
+#!/bin/bash
+#PBS -N editing
+#PBS -l select=1:ncpus=2:mem=24gb:ngpus=1:gpu_type=RTX6000
+#PBS -l walltime=01:00:00
+#PBS -j oe
+
+# Load modules
+module load cuda/10.1
+module load miniforge/3
+
+# Activate conda environment
+source ~/miniforge3/etc/profile.d/conda.sh
+conda activate ffhq_uv_cu101
+
+# Set working directory
+cd $PBS_O_WORKDIR
+
+# Define paths
+proj_data_dir="../test"
+checkpoints_dir="../checkpoints"
+
+# Read the inverted latents in "latents" sub-folder
+# Read the detected attributes in "lights" and "attributes" sub-folders
+# Save the edited multi-view face images and latents in "edit" sub-folder
+echo "Starting Face Editing at $(date)"
+cd ../DataSet_Step3_Editing || { echo "Failed to enter DataSet_Step3_Editing"; exit 1; }
+
+python run_styleflow_editing.py \
+    --proj_data_dir ${proj_data_dir} \
+    --network_pkl ${checkpoints_dir}/stylegan_model/stylegan2-ffhq-config-f.pkl \
+    --flow_model_path ${checkpoints_dir}/styleflow_model/modellarge10k.pt \
+    --exp_direct_path ${checkpoints_dir}/styleflow_model/expression_direction.pt \
+    --exp_recognition_path ${checkpoints_dir}/exprecog_model/FacialExpRecognition_model.t7 \
+    --edit_items delight,norm_attr,multi_yaw \
+    || { echo "Step 3 Face Editing failed"; exit 1; }
+
+echo "Step 3 Face Editing completed successfully at $(date)"
