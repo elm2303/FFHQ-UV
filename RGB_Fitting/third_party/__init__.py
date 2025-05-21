@@ -57,7 +57,8 @@ class Landmark68_API:
             five_points = self.mtcnn_model(img)
 
         # Not detect faces
-        if five_points is None:
+        if five_points is None or len(five_points) == 0:
+            print("no face to detect by MTCNN, skipping this image")
             return None
 
         lm_68 = detect_68p(img, five_points, self.lm_sess, self.input_op, self.output_op)

@@ -44,6 +44,9 @@ def resize_n_crop_img(img, lm, t, s, target_size=224., skin_mask=None, parse_mas
     up = (h / 2 - target_size / 2 + float((h0 / 2 - t[1]) * s)).astype(np.int32)
     below = up + target_size
 
+    if w <= 0 or h <= 0:
+        raise ValueError(f"Invalid dimensions for resizing image: width={w}, height={h}")
+
     img = img.resize((w, h), resample=Image.BICUBIC)
     img = img.crop((left, up, right, below))
 

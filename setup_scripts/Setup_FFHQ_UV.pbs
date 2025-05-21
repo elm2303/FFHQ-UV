@@ -28,20 +28,22 @@ conda activate $ENV_NAME
 echo "==[ Installing CUDA toolkit 10.1 and cuDNN 7.6 ]=="
 conda install -y -c conda-forge cudatoolkit=10.1 cudnn=7.6
 
+conda install -y cudatoolkit=10.0
+
 echo $CUDA_HOME
 
 # Install PyTorch 1.7.1 with CUDA 10.1
-echo "==[ Installing PyTorch 1.7.1 + torchvision + torchaudio ]=="https://chatgpt.com/c/67f7b550-a058-8004-81af-d79e28d4d911
+echo "==[ Installing PyTorch 1.7.1 + torchvision + torchaudio ]=="
 pip install torch==1.7.1+cu101 torchvision==0.8.2+cu101 torchaudio==0.7.2 -f https://download.pytorch.org/whl/torch_stable.html
 
 # Install TensorFlow 1.15.0 GPU version
-echo "==[ Installing TensorFlow 1.15.0 (GPU) ]=="
-pip install tensorflow-gpu==1.15.0
+echo "==[ Installing TensorFlow 1.15.5 (GPU) ]=="
+pip install tensorflow-gpu==1.15.5
 
 # Install core dependencies
 echo "==[ Installing Python packages ]=="
 pip install \
-  tensorboard==1.15.0 \
+  tensorboard==1.15.3 \
   protobuf==3.20.3
   dlib \
   tqdm scikit-image opencv-python pillow imageio matplotlib \

@@ -29,7 +29,6 @@ class FitDataset:
             raw_lm = self.lm68_model(input_img)
             if raw_lm is None:
                 return None
-                
             raw_lm = raw_lm.astype(np.float32)
 
             # calculate skin attention mask
@@ -46,9 +45,31 @@ class FitDataset:
             raw_parse_mask = face_mask * ex_mouth_mask * ex_eye_mask
             raw_parse_mask = np2pillow(raw_parse_mask, src_range=1.0)
 
-            # alignment
-            trans_params, img, lm, skin_mask, parse_mask = align_img(raw_img, raw_lm, self.lm68_3d, raw_skin_mask,
-                                                                     raw_parse_mask)
+            # pre-align: validate landmark bbox
+            xs, ys = raw_lm[:, 0], raw_lm[:, 1]
+            x_min, x_max = float(xs.min()), float(xs.max())
+            y_min, y_max = float(ys.min()), float(ys.max())
+            pad = 0.1 * max(x_max - x_min, y_max - y_min)
+            left   = max(0, x_min - pad)
+            right  = min(raw_img.width,  x_max + pad)
+            top    = max(0, y_min - pad)
+            bottom = min(raw_img.height, y_max + pad)
+            if right <= left or bottom <= top:
+                print(f"[WARN] Skipping image: invalid pre-align bbox {(left, top, right, bottom)}")
+                return None
+
+            # alignment with guard inside try/except
+            try:
+                trans_params, img, lm, skin_mask, parse_mask = align_img(
+                    raw_img, raw_lm, self.lm68_3d, raw_skin_mask, raw_parse_mask
+                )
+                # ensure resulting img has valid size
+                tw, th = img.size
+                if tw <= 0 or th <= 0:
+                    raise ValueError(f"Degenerate aligned image size {(tw, th)}")
+            except Exception as e:
+                print(f"[WARN] Skipping image due to alignment error: {e}")
+                return None
 
             # to tensor
             _, H = img.size

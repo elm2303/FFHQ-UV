@@ -82,6 +82,8 @@ def detect_68p(img, five_points, sess, input_op, output_op):
     input_img, scale, bbox = align_for_lm(img, five_points)  # align for 68 landmark detection
 
     # detect landmarks
+    if input_img.shape[:2] != (224, 224):
+        input_img = cv2.resize(input_img, (224, 224))  # resize to 224x224
     input_img = np.reshape(input_img, [1, 224, 224, 3]).astype(np.float32)
     landmark = sess.run(output_op, feed_dict={input_op: input_img})
 
